@@ -373,7 +373,7 @@ const DIST_DIR = path.resolve('dist');
 if (fs.existsSync(DIST_DIR)) {
   app.use(express.static(DIST_DIR));
   // SPA catch-all — let React Router handle client-side routes
-  app.get('*', (_req, res) => {
+  app.get('/*', (_req, res) => {
     res.sendFile(path.join(DIST_DIR, 'index.html'));
   });
 }
