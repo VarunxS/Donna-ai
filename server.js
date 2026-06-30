@@ -260,8 +260,15 @@ app.post('/api/donna', async (req, res) => {
 
     return res.json({ text, history, actions });
   } catch (err) {
-    console.error('Donna API error:', err.message);
-    return res.status(502).json({ error: 'Donna API call failed', details: err.message });
+    console.error('Donna API error:', err);
+    const errMsg = err.message || '';
+    if (errMsg.includes('Quota exceeded') || errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED')) {
+      return res.status(429).json({ 
+        error: 'Quota Exceeded', 
+        details: 'You have exceeded the Gemini API Free Tier daily limit (20 requests/day). Please wait a bit or upgrade your AI Studio plan.' 
+      });
+    }
+    return res.status(502).json({ error: 'Donna API call failed', details: errMsg });
   }
 });
 

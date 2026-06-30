@@ -286,7 +286,14 @@ Always sound confident and supportive.`;
         body: JSON.stringify({ history: newHistory, systemPrompt })
       });
 
-      if (!response.ok) throw new Error(`API Error ${response.status}`);
+      if (!response.ok) {
+        let details = '';
+        try {
+          const errData = await response.json();
+          details = errData.details || '';
+        } catch {}
+        throw new Error(details || `API Error ${response.status}`);
+      }
 
       const data = await response.json();
       setHistory(data.history);
@@ -333,7 +340,10 @@ Always sound confident and supportive.`;
       }
     } catch (err) {
       console.error('Donna API error:', err);
-      const errorMsg = "Sorry, I'm having trouble connecting right now. Make sure the backend server is running.";
+      const isQuota = err.message.includes('Quota') || err.message.includes('limit') || err.message.includes('429');
+      const errorMsg = isQuota
+        ? "I have exceeded the Gemini Free Tier limit of 20 requests per day. Please retry in a bit or check your plan details."
+        : "Sorry, I'm having trouble connecting right now. Make sure the backend server is running.";
       setLastResponse(errorMsg);
       speak(errorMsg);
       shouldAutoListenRef.current = true;
