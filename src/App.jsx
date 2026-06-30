@@ -356,6 +356,8 @@ export default function App() {
   const totalDeadlines = record.kept + record.broken;
   const focusScore = totalDeadlines > 0 ? Math.round((record.kept / totalDeadlines) * 100) : 100;
 
+  const userDisplayName = profileFocus || (userEmail ? userEmail.split('@')[0] : 'Sovereign Focus');
+
   // ── Show login screen if not authenticated ─────────────────────────────
   if (!userEmail || !userPassword) {
     return <Login onLogin={handleLogin} />;
@@ -1180,11 +1182,11 @@ export default function App() {
                   {/* Greeting Block */}
                   <div className="flex items-center gap-3.5 mb-5 mt-1 shrink-0">
                     <div className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-stone-300 font-bold shrink-0">
-                      U
+                      {userDisplayName.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="text-[9px] text-stone-500 font-extrabold uppercase tracking-wider block">Commitment Contract</span>
-                      <h2 className="text-sm font-bold text-white">Robert Fox</h2>
+                      <span className="text-xs text-stone-500 font-extrabold uppercase tracking-wider block">Commitment Contract</span>
+                      <h2 className="text-sm font-bold text-white">{userDisplayName}</h2>
                     </div>
                   </div>
 
@@ -1493,14 +1495,14 @@ export default function App() {
             )}
 
             {/* MOBILE FLOATING BOTTOM DOCK */}
-            <div className="md:hidden absolute bottom-4 left-4 right-4 h-16 bg-stone-900 border border-white/5 rounded-2xl shadow-lg flex justify-around items-center px-4 z-20 shrink-0">
+            <div className="md:hidden fixed bottom-4 left-4 right-4 h-16 bg-stone-900 border border-white/5 rounded-2xl shadow-lg flex justify-around items-center px-4 z-20 shrink-0">
               <button
                 onClick={() => setActiveTab('dashboard')}
                 className={`flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all cursor-pointer ${
                   activeTab === 'dashboard' ? 'text-white font-bold' : 'text-stone-400 hover:text-white'
                 }`}
               >
-                <span className="text-[9px] font-bold tracking-wider uppercase">Home</span>
+                <span className="text-[10px] font-bold tracking-wider uppercase">Home</span>
               </button>
 
               <button
@@ -1512,7 +1514,7 @@ export default function App() {
                   activeTab === 'calendar' ? 'text-white font-bold' : 'text-stone-400 hover:text-white'
                 }`}
               >
-                <span className="text-[9px] font-bold tracking-wider uppercase">Schedule</span>
+                <span className="text-[10px] font-bold tracking-wider uppercase">Schedule</span>
               </button>
 
               <button
@@ -1522,7 +1524,7 @@ export default function App() {
                 }`}
               >
                 <div className="relative">
-                  <span className="text-[9px] font-bold tracking-wider uppercase">Donna AI</span>
+                  <span className="text-[10px] font-bold tracking-wider uppercase">Donna AI</span>
                   {activeTab !== 'donna' && (
                     <span className="absolute top-0 -right-2 w-1.5 h-1.5 bg-white rounded-full animate-ping"></span>
                   )}
