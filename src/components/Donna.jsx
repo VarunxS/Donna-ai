@@ -27,6 +27,7 @@ export default function Donna({
   const setHistory = propSetHistory !== undefined ? propSetHistory : setLocalHistory;
   const [transcript, setTranscript] = useState('');
   const [lastResponse, setLastResponse] = useState('');
+  const [customKeyInput, setCustomKeyInput] = useState('');
   const lastResponseRef = useRef('');
   
   useEffect(() => {
@@ -280,9 +281,15 @@ CRITICAL INSTRUCTIONS FOR SCHEDULING:
 Be proactive — if you notice something relevant, mention it. 
 Always sound confident and supportive.`;
 
+      const customKey = localStorage.getItem('donna_user_gemini_key') || '';
+      const headers = { 'Content-Type': 'application/json' };
+      if (customKey.trim()) {
+        headers['x-gemini-key'] = customKey.trim();
+      }
+
       const response = await fetch('/api/donna', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ history: newHistory, systemPrompt })
       });
 
@@ -689,9 +696,35 @@ Always sound confident and supportive.`;
             "{transcript}"
           </p>
         ) : lastResponse ? (
-          <p className="text-base text-stone-300 leading-relaxed font-normal">
-            {lastResponse}
-          </p>
+          <div className="space-y-4">
+            <p className="text-base text-stone-300 leading-relaxed font-normal">
+              {lastResponse}
+            </p>
+            {(lastResponse.includes('Quota') || lastResponse.includes('limit') || lastResponse.includes('quota') || lastResponse.includes('429')) && (
+              <div className="mt-4 p-4 bg-stone-900 border border-white/5 rounded-2xl max-w-sm mx-auto space-y-3 animate-fade-in">
+                <input
+                  type="password"
+                  placeholder="Paste your Gemini API Key (AIzaSy...)"
+                  value={customKeyInput}
+                  onChange={(e) => setCustomKeyInput(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-black/60 border border-white/10 rounded-xl text-xs text-white placeholder:text-stone-600 focus:outline-none focus:border-white/20"
+                />
+                <button
+                  onClick={() => {
+                    if (customKeyInput.trim()) {
+                      localStorage.setItem('donna_user_gemini_key', customKeyInput.trim());
+                      setLastResponse("Thank you! Your custom Gemini API Key has been saved locally. Let's try again!");
+                      speak("Your custom key is saved. Let's try again.");
+                      setCustomKeyInput('');
+                    }
+                  }}
+                  className="w-full py-2 bg-white text-black font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-stone-200 transition-colors cursor-pointer"
+                >
+                  Apply Key
+                </button>
+              </div>
+            )}
+          </div>
         ) : null}
       </div>
 

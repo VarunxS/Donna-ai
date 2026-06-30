@@ -22,6 +22,7 @@ export default function App() {
   // ── Auth session ──────────────────────────────────────────────────────────
   const [userEmail,    setUserEmail]    = useState(() => localStorage.getItem('momentum_user_email') || '');
   const [userPassword, setUserPassword] = useState(() => localStorage.getItem('momentum_user_pw') || '');
+  const [customApiKey, setCustomApiKey] = useState(() => localStorage.getItem('donna_user_gemini_key') || '');
   const syncTimerRef = useRef(null);
 
   const [tasks, setTasks] = useState([]);
@@ -1098,7 +1099,7 @@ export default function App() {
             Time Machine
           </button>
 
-          {/* Profile Card — live email + logout */}
+          {/* Profile Card — live email + custom key + logout */}
           <div className="p-4 bg-stone-900 border border-white/5 rounded-2xl mt-6">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-8 h-8 rounded-full bg-orange-900/30 border border-orange-500/20 flex items-center justify-center text-orange-300 font-bold shrink-0 text-xs">
@@ -1109,6 +1110,27 @@ export default function App() {
                 <span className="text-[9px] text-stone-500 uppercase block mt-0.5 font-bold">Synced • All local</span>
               </div>
             </div>
+
+            {/* Custom Gemini Key section */}
+            <div className="mb-3 border-t border-white/5 pt-2.5">
+              <span className="text-[9px] text-stone-500 font-extrabold uppercase tracking-wider block mb-1">Custom Gemini API Key</span>
+              <input
+                type="password"
+                placeholder="Paste key to bypass quota limits"
+                value={customApiKey}
+                onChange={(e) => {
+                  const key = e.target.value.trim();
+                  setCustomApiKey(key);
+                  if (key) {
+                    localStorage.setItem('donna_user_gemini_key', key);
+                  } else {
+                    localStorage.removeItem('donna_user_gemini_key');
+                  }
+                }}
+                className="w-full px-2.5 py-1.5 bg-black/60 border border-white/5 rounded-lg text-[10px] text-white placeholder:text-stone-700 focus:outline-none focus:border-white/15"
+              />
+            </div>
+
             <button
               onClick={handleLogout}
               className="w-full py-2 text-[10px] font-bold text-stone-500 hover:text-red-400 uppercase tracking-wider border border-white/5 hover:border-red-500/20 rounded-xl transition-all cursor-pointer"

@@ -48,13 +48,22 @@ if (apiKey) {
   console.warn('⚠️  GEMINI_API_KEY not set — all requests will return 503');
 }
 
+function getAiClient(req) {
+  const customKey = req.headers['x-gemini-key'];
+  if (customKey && customKey.trim()) {
+    return new GoogleGenAI({ apiKey: customKey.trim() });
+  }
+  return ai;
+}
+
 // ---------------------------------------------------------------------------
 // POST /api/gemini
 // Body: { prompt: string, systemPrompt?: string, jsonMode?: boolean }
 // Returns: { text: string } or { json: object } when jsonMode is true
 // ---------------------------------------------------------------------------
 app.post('/api/gemini', async (req, res) => {
-  if (!ai) {
+  const clientAi = getAiClient(req);
+  if (!clientAi) {
     return res.status(503).json({ error: 'Gemini API key not configured' });
   }
 
@@ -75,7 +84,7 @@ app.post('/api/gemini', async (req, res) => {
       config.responseMimeType = 'application/json';
     }
 
-    const response = await ai.models.generateContent({
+    const response = await clientAi.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
       config,
@@ -164,7 +173,8 @@ const donnaTools = [{
 }];
 
 app.post('/api/donna', async (req, res) => {
-  if (!ai) return res.status(503).json({ error: 'Gemini API key not configured' });
+  const clientAi = getAiClient(req);
+  if (!clientAi) return res.status(503).json({ error: 'Gemini API key not configured' });
 
   let { history, systemPrompt } = req.body;
   if (!history || !Array.isArray(history)) return res.status(400).json({ error: 'history array is required' });
@@ -179,7 +189,7 @@ app.post('/api/donna', async (req, res) => {
     };
 
     // First call to Gemini
-    let response = await ai.models.generateContent({
+    let response = await clientAi.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: history,
       config,
@@ -240,7 +250,7 @@ app.post('/api/donna', async (req, res) => {
       });
 
       // Second call to Gemini to get the text response after executing the function
-      response = await ai.models.generateContent({
+      response = await clientAi.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: history,
         config,

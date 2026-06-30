@@ -62,10 +62,16 @@ async function callGemini({ prompt, systemPrompt, jsonMode = false }) {
 
   const personalizedSystemPrompt = systemPrompt ? injectUserProfile(systemPrompt) : systemPrompt;
 
+  const customKey = typeof window !== 'undefined' ? localStorage.getItem('donna_user_gemini_key') || '' : '';
+  const headers = { 'Content-Type': 'application/json' };
+  if (customKey.trim()) {
+    headers['x-gemini-key'] = customKey.trim();
+  }
+
   try {
     const res = await fetch('/api/gemini', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ 
         prompt, 
         systemPrompt: personalizedSystemPrompt, 
