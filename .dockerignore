@@ -1,0 +1,9 @@
+node_modules
+.env
+.env.*
+dist
+donna_db.json
+momentum_db.json
+.DS_Store
+*.log
+.agents

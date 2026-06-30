@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/* ============================================
+   DONNA — Design Tokens
+   ============================================ */
+
+@theme {
+  --color-momentum-black: #0a0705;
+  --color-momentum-card: #161210;
+  --color-momentum-card-hover: #201b17;
+  --color-momentum-border: rgba(249, 115, 22, 0.08);
+  --color-momentum-border-hover: rgba(249, 115, 22, 0.18);
+  --color-momentum-primary: #fffdfa;
+  --color-momentum-secondary: #c5c0bb;
+  --color-momentum-muted: #827b75;
+  --color-momentum-calm: #827b75;
+  --color-momentum-nudge: #bca89a;
+  --color-momentum-critical: #ff453a;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-momentum-black);
+  color: var(--color-momentum-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Hide scrollbars on components */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
