@@ -18,63 +18,81 @@ export function useSpeech() {
 
       // Retrieve fresh voices directly on trigger to ensure full async loading
       const currentVoices = window.speechSynthesis.getVoices() || [];
-      const englishVoices = currentVoices.filter(v => v.lang.startsWith('en-') || v.lang.toLowerCase() === 'en');
+      const englishVoices = currentVoices.filter(v => v.lang.startsWith('en') || v.lang.toLowerCase().includes('en'));
 
-      const scoredVoices = englishVoices.map(voice => {
+      const getVoiceScore = (voice) => {
         const name = voice.name.toLowerCase();
         let score = 0;
 
-        // Penalize known male voices to guarantee a soft, smart female voice selection
-        const maleVoices = ['alex', 'daniel', 'fred', 'bruce', 'junior', 'ralph', 'albert', 'david', 'mark', 'george', 'ravi'];
-        if (maleVoices.some(m => name.includes(m))) {
-          score -= 150;
+        // Strict lists of male vs female names / markers
+        const maleKeywords = [
+          'alex', 'daniel', 'fred', 'bruce', 'junior', 'ralph', 'albert', 
+          'david', 'mark', 'george', 'ravi', 'rishi', 'oliver', 'nathan', 
+          'thomas', 'tom', 'male', 'voice 1', 'voice 3'
+        ];
+        const femaleKeywords = [
+          'samantha', 'victoria', 'susan', 'karen', 'moira', 'tessa', 'veena', 
+          'fiona', 'serena', 'allison', 'ava', 'sara', 'zira', 'hazel', 'heera', 
+          'aria', 'google us english', 'google uk english female', 'female',
+          'voice 2', 'voice 4'
+        ];
+
+        const isMale = maleKeywords.some(keyword => name.includes(keyword));
+        const isFemale = femaleKeywords.some(keyword => name.includes(keyword));
+
+        if (isFemale) {
+          score += 1000; // Force female voices to the top
+        }
+        if (isMale) {
+          score -= 1000; // Actively suppress male voices
         }
 
-        // Specifically target soft, smart female/natural voices for premium presentation
+        // Additional scoring details
         if (name.includes('google us english') || name.includes('google uk english female')) {
-          score += 200; // Smart/soft Google cloud-based voices
+          score += 200; 
         } else if (name.includes('victoria')) {
-          score += 180; // Victoria is macOS's softest, most polite female voice
+          score += 180; 
         } else if (name.includes('susan')) {
-          score += 170; // Susan is another pleasant, soft macOS female voice
+          score += 170; 
         } else if (name.includes('aria') || name.includes('zira')) {
-          score += 160; // Windows premium female voices
-        } else if (name.includes('siri') && (name.includes('female') || name.includes('voice 2') || name.includes('voice 3') || name.includes('voice 4'))) {
-          score += 150; // Siri female variants
+          score += 160; 
+        } else if (name.includes('siri') && (name.includes('voice 2') || name.includes('voice 4'))) {
+          score += 150; 
         } else if (name.includes('karen') || name.includes('moira') || name.includes('veena') || name.includes('tessa')) {
-          score += 120; // Regional female voices
+          score += 120; 
         } else if (name.includes('samantha')) {
-          score += 100; // Samantha is the default clear macOS female voice
+          score += 100; 
         } else if (name.includes('google')) {
           score += 85;
         } else if (name.includes('enhanced') || name.includes('premium') || name.includes('natural') || name.includes('neural')) {
           score += 80;
-        } else {
-          score += 10;
         }
 
         // Filter out highly robotic/joke fallback voices if possible
         const roboticVoices = ['fred', 'whisper', 'zarvox', 'cellos', 'pipe organ', 'histeria', 'bad news', 'boing', 'bubbles', 'deranged', 'bells'];
         if (roboticVoices.some(v => name.includes(v))) {
-          score -= 60;
+          score -= 500;
         }
 
-        // Slight preference for local service if scores are tied
         if (voice.localService) {
           score += 1;
         }
 
-        return { voice, score };
-      });
+        return score;
+      };
 
+      const scoredVoices = englishVoices.map(voice => ({ voice, score: getVoiceScore(voice) }));
       scoredVoices.sort((a, b) => b.score - a.score);
 
       if (scoredVoices.length > 0) {
         utterance.voice = scoredVoices[0].voice;
         console.log('Donna selected voice:', scoredVoices[0].voice.name);
       } else if (currentVoices.length > 0) {
-        utterance.voice = currentVoices[0];
-        console.log('Donna selected default voice:', currentVoices[0].name);
+        // If no English voices, rank all current voices to find the best female voice in any language
+        const allScored = currentVoices.map(voice => ({ voice, score: getVoiceScore(voice) }));
+        allScored.sort((a, b) => b.score - a.score);
+        utterance.voice = allScored[0].voice;
+        console.log('Donna selected fallback voice:', allScored[0].voice.name);
       }
 
       utterance.rate = 0.93; // Deliberate and calm pacing
